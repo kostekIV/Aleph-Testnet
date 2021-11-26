@@ -363,6 +363,33 @@ def start_flooding(conn):
     # 3. flood
     conn.run('./flooder_script.sh > flood.log 2> flood.error')
 
+# ======================================================================================
+#                                       dispatcher
+# ======================================================================================
+@task
+def setup_benchmark_repo(conn):
+    # 1. get repo
+    conn.put('../aleph-node/benchmark', '.')
+
+    # 2. create env
+    conn.run('cd ./benchmark && python3 -m bench ./venv && source ./venv/bin/activate && pip install -r requirements.txt')
+
+
+@task
+def run_bench_script(conn):
+    # 1. send script
+    conn.put('./bench_script.sh', '.')
+    
+    # 2. add exec permissions
+    conn.run('chmod +x ./bench_script.sh')
+
+    # setup perms
+    # conn.run('export ...')
+
+    # 3. run
+    conn.run('source ./venv/bin/activate && ./bench_script.sh')
+
+
 
 # ======================================================================================
 #                                        misc
