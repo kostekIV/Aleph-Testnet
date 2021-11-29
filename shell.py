@@ -493,7 +493,9 @@ def setup_infrastructure(n_parties, chain='dev', regions=use_regions(), instance
     generate_p2p_keys(validators)
 
     color_print('waiting till ports are open on machines')
-    wait('open 22', regions, tag)
+    
+    sleep(60 * 3)
+    #wait('open 22', regions, tag)
 
     color_print('setup')
     run_task('setup', regions, parallel, tag)
