@@ -356,7 +356,7 @@ def send_flooder_binary(conn):
 def start_flooding(conn):
     # 1. Send script
     conn.put('bin/flooder_script.sh', '.')
-    
+
     # 2. add exec permissions
     conn.run('chmod +x ./flooder_script.sh')
 
@@ -366,29 +366,32 @@ def start_flooding(conn):
 # ======================================================================================
 #                                       dispatcher
 # ======================================================================================
+
+
 @task
 def setup_benchmark_repo(conn):
     # 1. get repo
-    conn.put('../aleph-node/benchmark', '.')
+    conn.run(
+        'git clone -b benchmark-set-regions https://github.com/mike1729/aleph-node.git')
 
-    # 2. create env
-    conn.run('cd ./benchmark && python3 -m bench ./venv && source ./venv/bin/activate && pip install -r requirements.txt')
+    # 2. install dependencies
+    conn.run('cd ./aleph-node/benchmark && pip install -r requirements.txt')
 
 
 @task
 def run_bench_script(conn):
     # 1. send script
     conn.put('./bench_script.sh', '.')
-    
+
     # 2. add exec permissions
     conn.run('chmod +x ./bench_script.sh')
 
-    # setup perms
-    # conn.run('export ...')
+    # 3. setup AWS perms
+    conn.run('mkdir -p ~/.aws')
+    conn.put('~/.aws/credentials', '~/.aws/')
 
-    # 3. run
-    conn.run('source ./venv/bin/activate && ./bench_script.sh')
-
+    # 4. run
+    conn.run('./bench_script.sh')
 
 
 # ======================================================================================

@@ -459,6 +459,7 @@ def setup_flooder(n_flooders, regions, instance_type, tag):
     # add flood machines to nodes firewall
     allow_traffic(regions, ip_list, True, tag)
 
+
 def setup_infrastructure(n_parties, chain='dev', regions=use_regions(), instance_type='t2.micro',
                          volume_size=8, tag='dev', **chain_flags):
     start = time()
@@ -503,7 +504,8 @@ def setup_infrastructure(n_parties, chain='dev', regions=use_regions(), instance
     color_print('start nginx')
     run_task('run-nginx', regions, parallel, tag)
 
-    color_print(f'establishing the environment took {round(time() - start, 2)}s')
+    color_print(
+        f'establishing the environment took {round(time() - start, 2)}s')
 
     return pids
 
@@ -530,7 +532,8 @@ def setup_benchmark(n_parties, chain='dev', regions=use_regions(), instance_type
     '''Setups the infrastructure and the binary. After it is successful, the 'dispatch'
     task has to be run to start the benchmark.'''
 
-    setup_nodes(n_parties, chain, regions, instance_type, volume_size, tag, node_flags, chain_flags)
+    setup_nodes(n_parties, chain, regions, instance_type,
+                volume_size, tag, node_flags, chain_flags)
 
     allow_all_traffic(regions, tag)
 
@@ -569,8 +572,9 @@ def run_devnet(n_parties, regions=use_regions(), instance_type='t2.micro'):
     instances_state(testnet_regions(), 'testnet')
 
 
-def setup_dispatcher(region='us-east-1', tag='dispatcher', exp_tag='exp'):
-    launch_new_instances_in_region(n_parties=1, region_name=region, tag=tag, instance_type='c5.2xlarge')
+def setup_dispatcher(n_parties=4, region='us-east-1', tag='dispatcher', exp_tag='exp', instance_type='c5.2xlarge'):
+    launch_new_instances_in_region(
+        n_parties=1, region_name=region, tag=tag, instance_type=instance_type)
 
     color_print('waiting till ports are open on machines')
     wait('open 22', [region], tag)
@@ -578,7 +582,7 @@ def setup_dispatcher(region='us-east-1', tag='dispatcher', exp_tag='exp'):
     color_print('setting deps')
     with open('bench_script.sh', 'w') as f:
         bang = '#!/usr/bin/env bash\n'
-        cmd = f'./benchmark.py ./aleph-node 100 --tag {exp_tag}'
+        cmd = f'./benchmark.py ./aleph-node {n_parties} --tag {exp_tag}'
         f.writelines([bang, cmd])
 
     run_task('setup', regions=[region], parallel=False, tag=tag)
