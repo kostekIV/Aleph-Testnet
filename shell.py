@@ -481,7 +481,7 @@ def setup_infrastructure(n_parties, chain='dev', regions=use_regions(), instance
         c += len(ipl)
         ip_list.extend(ipl)
 
-    allow_traffic(regions, ip_list, parallel, tag)
+    # allow_traffic(regions, ip_list, parallel, tag)
 
     write_addresses(ip_list)
 
@@ -547,8 +547,7 @@ def setup_flooding(region=default_region(), tag='flooders'):
     print('Flooder ip:', instances_ip_in_region(region_name=region, tag=tag))
 
     color_print('waiting till ports are open on machines')
-    sleep(60 * 3)
-    # wait('open 22', [region], tag)
+    wait('open 22', [region], tag)
 
     color_print('sending flooder binary')
     run_task('setup', regions=[region], parallel=False, tag=tag)
@@ -587,7 +586,7 @@ def setup_dispatcher(n_parties=4, region='us-east-1', exp_regions=['us-east-1', 
     with open('bench_script.sh', 'w') as f:
         bang = '#!/usr/bin/env bash\n'
         cwd = 'cd aleph-node/benchmark\n'
-        cmd = f'./benchmark.py run {n_parties} {",".join(exp_regions)} ../../aleph-binary --tag {exp_tag} --instance=c5.large 2> dispatcher.log 1>&2\n'
+        cmd = f'./benchmark.py run {n_parties} {",".join(exp_regions)} ../../aleph-binary --tag {exp_tag} --instance=c.large 2> dispatcher.log 1>&2\n'
         f.writelines([bang, cwd, cmd])
 
     run_task('setup', regions=[region], parallel=False, tag=tag)
