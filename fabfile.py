@@ -3,6 +3,7 @@ import json
 from itertools import chain
 from os import remove
 from subprocess import call
+from pathlib import Path
 
 from fabric import task
 
@@ -370,17 +371,24 @@ def start_flooding(conn):
 
 @task
 def setup_benchmark_repo(conn):
-    # 1. get repo
-    conn.run(
-        'git clone -b benchmark-set-regions https://github.com/mike1729/aleph-node.git')
+    # 1. rename binary to avoid conflict
+    conn.run('mv aleph-node aleph-binary')
 
-    # 2. install dependencies
-    conn.run('cd ./aleph-node/benchmark && pip install -r requirements.txt')
+    # 2. get repo
+    conn.run('git clone https://github.com/Cardinal-Cryptography/aleph-node.git')
+
+    # 3. setup python
+    conn.run('sudo apt install -y python3-venv parallel fabric')
+    conn.run('python3 -m venv ./venv')
+
+    # 4. install dependencies
+    conn.run('source ./venv/bin/activate && '\
+             'cd ./aleph-node/benchmark && '\
+             'pip install -r requirements.txt')
 
 
 @task
 def run_bench_script(conn):
-    # 1. send script
     conn.put('./bench_script.sh', '.')
 
     # 2. add exec permissions
@@ -388,11 +396,10 @@ def run_bench_script(conn):
 
     # 3. setup AWS perms
     conn.run('mkdir -p ~/.aws')
-    conn.put('~/.aws/credentials', '~/.aws/')
+    conn.put(f'{Path.home()}/.aws/credentials', '.aws/')
 
     # 4. run
-    conn.run('./bench_script.sh')
-
+    conn.run('source ./venv/bin/activate && AWS_DEFAULT_REGION=us-east-1 AWS_PROFILE=Experiment ./bench_script.sh')
 
 # ======================================================================================
 #                                        misc

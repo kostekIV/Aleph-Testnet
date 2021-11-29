@@ -572,7 +572,8 @@ def run_devnet(n_parties, regions=use_regions(), instance_type='t2.micro'):
     instances_state(testnet_regions(), 'testnet')
 
 
-def setup_dispatcher(n_parties=4, region='us-east-1', tag='dispatcher', exp_tag='exp', instance_type='c5.2xlarge'):
+def setup_dispatcher(n_parties=4, region='us-east-1', exp_regions=['us-east-1', 'us-east-2'],
+                    tag='dispatcher', exp_tag='exp', instance_type='c5.2xlarge'):
     launch_new_instances_in_region(
         n_parties=1, region_name=region, tag=tag, instance_type=instance_type)
 
@@ -582,14 +583,13 @@ def setup_dispatcher(n_parties=4, region='us-east-1', tag='dispatcher', exp_tag=
     color_print('setting deps')
     with open('bench_script.sh', 'w') as f:
         bang = '#!/usr/bin/env bash\n'
-        cmd = f'./benchmark.py ./aleph-node {n_parties} --tag {exp_tag}'
-        f.writelines([bang, cmd])
+        cwd = 'cd aleph-node/benchmark\n'
+        cmd = f'./benchmark.py run {n_parties} {",".join(exp_regions)} ../../aleph-binary --tag {exp_tag} 2> dispatcher.log 1>&2\n'
+        f.writelines([bang, cwd, cmd])
 
     run_task('setup', regions=[region], parallel=False, tag=tag)
-    run_task('setup-benchmark-repo', regions=[region], parallel=False, tag=tag)
-
-    color_print('send the binary')
     run_task('send-binary', regions=[region], parallel=False, tag=tag)
+    run_task('setup-benchmark-repo', regions=[region], parallel=False, tag=tag)
 
     color_print('run experiment')
     run_task('run-bench-script', regions=[region], parallel=False, tag=tag)
