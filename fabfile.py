@@ -375,7 +375,7 @@ def setup_benchmark_repo(conn):
     conn.run('mv aleph-node aleph-binary')
 
     # 2. get repo
-    conn.run('git clone https://github.com/Cardinal-Cryptography/aleph-node.git')
+    conn.run('git -b dispatcher clone https://github.com/kostekIV/Aleph-Testnet.git')
 
     # 3. setup python
     conn.run('sudo apt install -y python3-venv parallel fabric')
